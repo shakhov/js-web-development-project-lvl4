@@ -4,8 +4,8 @@
 
 **Task Manager** – система управления задачами, подобная (http://www.redmine.org/). Она позволяет ставить задачи, назначать исполнителей и менять их статусы. Для работы с системой требуется регистрация и аутентификация.
 
-### Hexlet tests and linter status:
-[![Actions Status](https://github.com/shakhov/js-web-development-project-lvl4/workflows/hexlet-check/badge.svg)](https://github.com/shakhov/js-web-development-project-lvl4/actions)
+[![Hexlet status](https://github.com/shakhov/js-web-development-project-lvl4/workflows/hexlet-check/badge.svg)](https://github.com/shakhov/js-web-development-project-lvl4/actions)
+[![Node CI](https://github.com/shakhov/js-web-development-project-lvl4/workflows/Node%20CI/badge.svg)](https://github.com/shakhov/js-web-development-project-lvl4/actions)
 
 ## Heroku
 
