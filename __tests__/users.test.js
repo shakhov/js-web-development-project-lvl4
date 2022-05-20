@@ -48,7 +48,7 @@ describe('test users CRUD', () => {
     expect(response.statusCode).toBe(200);
   });
 
-  it('create', async () => {
+  it('create success', async () => {
     const params = testData.users.new;
     const response = await app.inject({
       method: 'POST',
@@ -66,6 +66,21 @@ describe('test users CRUD', () => {
     const user = await models.user.query().findOne({ email: params.email });
     expect(user).toMatchObject(expected);
   });
+
+  it('create existing fail', async () => {
+    const params = testData.users.existing;
+    const response = await app.inject({
+      method: 'POST',
+      url: app.reverse('users'),
+      payload: {
+        data: params,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  // TODO create validation fail tests
 
   afterEach(async () => {
     // Пока Segmentation fault: 11
