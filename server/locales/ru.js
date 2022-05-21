@@ -44,6 +44,7 @@ export default {
         email: 'Email',
         password: 'Пароль',
         createdAt: 'Дата создания',
+        index: 'Пользователи',
         new: {
           submit: 'Сохранить',
           signUp: 'Регистрация',
