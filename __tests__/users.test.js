@@ -77,7 +77,7 @@ describe('test users CRUD', () => {
       },
     });
 
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(422);
   });
 
   // TODO create validation fail tests
