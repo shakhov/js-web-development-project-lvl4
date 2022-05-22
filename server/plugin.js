@@ -97,14 +97,24 @@ const registerPlugins = (app) => {
   app.register(fastifyPassport.initialize());
   app.register(fastifyPassport.secureSession());
   app.decorate('fp', fastifyPassport);
+
   app.decorate('authenticate', (...args) => fastifyPassport.authenticate(
     'form',
     {
       failureRedirect: app.reverse('root'),
-      failureFlash: i18next.t('flash.authError'),
+      failureFlash: i18next.t('flash.auth.unauthenticated'),
     },
-  // @ts-ignore
+    // @ts-ignore
   )(...args));
+
+  app.decorate('authorizeEditUser', async (request, reply) => {
+    const { id } = request.params;
+    const { user } = request;
+    if (user.id.toString() !== id) {
+      request.flash('error', i18next.t('flash.auth.unauthorized.editUser'));
+      reply.redirect(app.reverse('users'));
+    }
+  });
 
   app.register(fastifyMethodOverride);
   app.register(fastifyObjectionjs, {

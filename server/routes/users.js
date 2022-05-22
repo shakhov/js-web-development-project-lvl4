@@ -30,42 +30,60 @@ export default (app) => {
 
       return reply;
     })
-    .get('/users/:id/edit', { name: 'editUser' }, async (req, reply) => {
-      const { id } = req.params;
-      const user = await app.objection.models.user.query().findById(id);
-
-      reply.render('users/edit', { user });
-      return reply;
-    })
-    .patch('/users/:id', { name: 'patchUser' }, async (req, reply) => {
-      const { id } = req.params;
-      const { data } = req.body;
-      try {
+    .get(
+      '/users/:id/edit',
+      {
+        name: 'editUser',
+        preValidation: [app.authenticate, app.authorizeEditUser],
+      },
+      async (req, reply) => {
+        const { id } = req.params;
         const user = await app.objection.models.user.query().findById(id);
-        await user.$query().update(data);
-        req.flash('info', i18next.t('flash.users.update.success'));
-        reply.status(302);
-        reply.redirect(app.reverse('users'));
+        reply.render('users/edit', { user });
         return reply;
-      } catch (error) {
-        req.flash('error', i18next.t('flash.users.update.error'));
-        reply.status(422);
-        reply.render('users/edit', { user: { ...data, id }, errors: error.data });
+      },
+    )
+    .patch(
+      '/users/:id',
+      {
+        name: 'patchUser',
+        preValidation: [app.authenticate, app.authorizeEditUser],
+      },
+      async (req, reply) => {
+        const { id } = req.params;
+        const { data } = req.body;
+        try {
+          const user = await app.objection.models.user.query().findById(id);
+          await user.$query().update(data);
+          req.flash('info', i18next.t('flash.users.update.success'));
+          reply.status(302);
+          reply.redirect(app.reverse('users'));
+        } catch (error) {
+          req.flash('error', i18next.t('flash.users.update.error'));
+          reply.status(422);
+          reply.render('users/edit', { user: { ...data, id }, errors: error.data });
+        }
         return reply;
-      }
-    })
-    .delete('/users/:id', { name: 'deleteUser' }, async (req, reply) => {
-      const { id } = req.params;
-      try {
-        await app.objection.models.user.query().deleteById(id);
-        req.flash('info', i18next.t('flash.users.delete.success'));
-        reply.redirect(app.reverse('root'));
+      },
+    )
+    .delete(
+      '/users/:id',
+      {
+        name: 'deleteUser',
+        preValidation: [app.authenticate, app.authorizeEditUser],
+      },
+      async (req, reply) => {
+        const { id } = req.params;
+        try {
+          await app.objection.models.user.query().deleteById(id);
+          req.flash('info', i18next.t('flash.users.delete.success'));
+          reply.redirect(app.reverse('root'));
+        } catch (error) {
+          req.flash('error', i18next.t('flash.users.delete.error'));
+          reply.status(422);
+          reply.redirect(app.reverse('root'));
+        }
         return reply;
-      } catch (error) {
-        req.flash('error', i18next.t('flash.users.delete.error'));
-        reply.status(422);
-        reply.redirect(app.reverse('root'));
-        return reply;
-      }
-    });
+      },
+    );
 };
