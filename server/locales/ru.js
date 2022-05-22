@@ -27,6 +27,12 @@ export default {
           success: 'Пользователь успешно изменён',
         },
       },
+      statuses: {
+        create: {
+          error: 'Не удалось создать статус',
+          success: 'Статус успешно создан',
+        },
+      },
       auth: {
         unauthenticated: 'Доступ запрещён! Пожалуйста, авторизируйтесь.',
         unauthorized: {
@@ -37,6 +43,7 @@ export default {
     layouts: {
       application: {
         users: 'Пользователи',
+        statuses: 'Статусы',
         signIn: 'Вход',
         signUp: 'Регистрация',
         signOut: 'Выход',
@@ -69,6 +76,22 @@ export default {
         },
         edit: {
           editing: 'Изменение пользователя',
+        },
+      },
+      statuses: {
+        id: 'ID',
+        name: 'Наименование',
+        createdAt: 'Дата создания',
+        index: 'Статусы',
+        actions: {
+          header: 'Действия',
+          new: 'Создать статус',
+          edit: 'Изменить',
+          delete: 'Удалить',
+        },
+        new: {
+          title: 'Создание статуса',
+          submit: 'Создать',
         },
       },
       welcome: {

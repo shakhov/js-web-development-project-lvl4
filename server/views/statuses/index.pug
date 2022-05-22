@@ -1,0 +1,20 @@
+extends ../layouts/application.pug
+
+block content
+  h1= t('views.statuses.index')
+  a(
+    class="btn btn-primary"
+    href=route('newStatus')
+  )= t('views.statuses.actions.new')
+  table.table.table-striped
+    thead
+      tr
+        th= t('views.statuses.id')
+        th= t('views.statuses.name')
+        th= t('views.statuses.createdAt')
+        tbody
+      each status in statuses
+        tr
+          td= status.id
+          td= status.name
+          td= formatDate(status.createdAt)
