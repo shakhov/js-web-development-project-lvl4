@@ -116,6 +116,15 @@ const registerPlugins = (app) => {
     }
   });
 
+  app.decorate('authorizeDeleteTask', async (request, reply) => {
+    const { id } = request.params;
+    const { user } = request;
+    if (user.id.toString() !== id) {
+      request.flash('error', i18next.t('flash.auth.unauthorized.editTask'));
+      reply.redirect(app.reverse('tasks'));
+    }
+  });
+
   app.register(fastifyMethodOverride);
   app.register(fastifyObjectionjs, {
     knexConfig: knexConfig[mode],

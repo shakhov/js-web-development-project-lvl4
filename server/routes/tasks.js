@@ -118,7 +118,7 @@ export default (app) => {
       '/tasks/:id',
       {
         name: 'deleteTask',
-        preValidation: app.authenticate,
+        preValidation: [app.authenticate, app.authorizeDeleteTask],
       },
       async (req, reply) => {
         const { id } = req.params;
