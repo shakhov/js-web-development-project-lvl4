@@ -5,16 +5,16 @@ import fastify from 'fastify';
 
 import init from '../server/plugin.js';
 import encrypt from '../server/lib/secure.cjs';
-import { getTestData, prepareData } from './helpers/index.js';
+import { prepareData } from './helpers/index.js';
 
 describe('test users CRUD', () => {
   let app;
   let knex;
   let models;
-  const testData = getTestData();
+  let testData;
 
   beforeAll(async () => {
-    app = fastify({ logger: { prettyPrint: true } });
+    app = fastify();
     await init(app);
     knex = app.objection.knex;
     models = app.objection.models;
@@ -24,7 +24,7 @@ describe('test users CRUD', () => {
     // перед каждым тестом выполняем миграции
     // и заполняем БД тестовыми данными
     await knex.migrate.latest();
-    await prepareData(app);
+    testData = await prepareData(app);
   });
 
   beforeEach(async () => {
@@ -48,6 +48,71 @@ describe('test users CRUD', () => {
     expect(response.statusCode).toBe(200);
   });
 
+  it('create fail: empty firstName', async () => {
+    const params = { ...testData.users.new, firstName: '' };
+    const response = await app.inject({
+      method: 'POST',
+      url: app.reverse('users'),
+      payload: {
+        data: params,
+      },
+    });
+
+    expect(response.statusCode).toBe(422);
+  });
+
+  it('create fail: empty lastName', async () => {
+    const params = { ...testData.users.new, lastName: '' };
+    const response = await app.inject({
+      method: 'POST',
+      url: app.reverse('users'),
+      payload: {
+        data: params,
+      },
+    });
+
+    expect(response.statusCode).toBe(422);
+  });
+
+  it('create fail: empty email', async () => {
+    const params = { ...testData.users.new, email: '' };
+    const response = await app.inject({
+      method: 'POST',
+      url: app.reverse('users'),
+      payload: {
+        data: params,
+      },
+    });
+
+    expect(response.statusCode).toBe(422);
+  });
+
+  it('create fail: incorrect email format', async () => {
+    const params = { ...testData.users.new, email: 'incorrect_email' };
+    const response = await app.inject({
+      method: 'POST',
+      url: app.reverse('users'),
+      payload: {
+        data: params,
+      },
+    });
+
+    expect(response.statusCode).toBe(422);
+  });
+
+  it('create fail: empty password', async () => {
+    const params = { ...testData.users.new, password: '' };
+    const response = await app.inject({
+      method: 'POST',
+      url: app.reverse('users'),
+      payload: {
+        data: params,
+      },
+    });
+
+    expect(response.statusCode).toBe(422);
+  });
+
   it('create success', async () => {
     const params = testData.users.new;
     const response = await app.inject({
@@ -68,7 +133,7 @@ describe('test users CRUD', () => {
   });
 
   it('create existing fail', async () => {
-    const params = testData.users.existing;
+    const params = testData.users.existing[0];
     const response = await app.inject({
       method: 'POST',
       url: app.reverse('users'),
@@ -79,8 +144,6 @@ describe('test users CRUD', () => {
 
     expect(response.statusCode).toBe(422);
   });
-
-  // TODO create validation fail tests
 
   afterEach(async () => {
     // Пока Segmentation fault: 11

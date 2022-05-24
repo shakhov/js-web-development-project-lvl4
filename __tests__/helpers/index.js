@@ -1,20 +1,84 @@
 // @ts-check
+import { faker } from '@faker-js/faker';
+import encrypt from '../../server/lib/secure.cjs';
 
-import { URL } from 'url';
-import fs from 'fs';
-import path from 'path';
+const getFakeUser = () => ({
+  firstName: faker.name.firstName(),
+  lastName: faker.name.lastName(),
+  email: faker.internet.email(),
+  password: faker.internet.password(),
+});
 
-// TODO: использовать для фикстур https://github.com/viglucci/simple-knex-fixtures
-
-const getFixturePath = (filename) => path.join('..', '..', '__fixtures__', filename);
-const readFixture = (filename) => fs.readFileSync(new URL(getFixturePath(filename), import.meta.url), 'utf-8').trim();
-const getFixtureData = (filename) => JSON.parse(readFixture(filename));
-
-export const getTestData = () => getFixtureData('testData.json');
+const getFakeStatus = () => ({
+  name: faker.word.adjective(),
+});
 
 export const prepareData = async (app) => {
   const { knex } = app.objection;
 
-  // получаем данные из фикстур и заполняем БД
-  await knex('users').insert(getFixtureData('users.json'));
+  const fakeUsersCount = 5;
+  const fakeStatusesCount = 5;
+
+  const fakeUsers = [];
+  const fakeStatuses = [];
+
+  for (let i = 0; i < fakeUsersCount; i += 1) {
+    fakeUsers.push(getFakeUser());
+  }
+
+  for (let i = 0; i < fakeStatusesCount; i += 1) {
+    fakeStatuses.push(getFakeStatus());
+  }
+
+  await knex('users').insert(fakeUsers.map(({
+    firstName, lastName, email, password,
+  }) => (
+    {
+      firstName,
+      lastName,
+      email,
+      passwordDigest: encrypt(password),
+    })));
+
+  await knex('statuses').insert(fakeStatuses);
+
+  return {
+    users: {
+      existing: fakeUsers,
+      new: getFakeUser(),
+    },
+    statuses: {
+      existing: fakeStatuses,
+      new: getFakeStatus(),
+    },
+  };
+};
+
+export const getUserSession = async (app, userData) => {
+  const responseSignIn = await app.inject({
+    method: 'POST',
+    url: app.reverse('session'),
+    payload: {
+      data: userData,
+    },
+  });
+
+  // после успешной аутентификации получаем куки из ответа,
+  // они понадобятся для выполнения запросов на маршруты требующие
+  // предварительную аутентификацию
+  const [sessionCookie] = responseSignIn.cookies;
+  const { name, value } = sessionCookie;
+  const cookies = { [name]: value };
+
+  const signOut = async () => app.inject({
+    method: 'DELETE',
+    url: app.reverse('session'),
+    // используем полученные ранее куки
+    cookies,
+  });
+
+  return {
+    cookies,
+    signOut,
+  };
 };
