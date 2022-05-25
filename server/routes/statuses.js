@@ -94,14 +94,27 @@ export default (app) => {
       },
       async (req, reply) => {
         const { id } = req.params;
+
         try {
+          const taskCount = await app.objection.models.task
+            .query()
+            .where('statusId', '=', id)
+            .resultSize();
+
+          if (taskCount > 0) {
+            req.flash('error', i18next.t('flash.statuses.delete.error'));
+            reply.status(302);
+            reply.redirect(app.reverse('statuses'));
+            return reply;
+          }
+
           await app.objection.models.status.query().deleteById(id);
           req.flash('info', i18next.t('flash.statuses.delete.success'));
           reply.redirect(app.reverse('statuses'));
         } catch (error) {
           req.flash('error', i18next.t('flash.statuses.delete.error'));
-          reply.status(422);
-          reply.redirect(app.reverse('status'));
+          reply.status(302);
+          reply.redirect(app.reverse('statuses'));
         }
         return reply;
       },
