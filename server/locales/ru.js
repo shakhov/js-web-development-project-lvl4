@@ -140,6 +140,9 @@ export default {
           title: 'Создание задачи',
           submit: 'Создать',
         },
+        edit: {
+          editing: 'Изменение задачи',
+        },
       },
       welcome: {
         index: {

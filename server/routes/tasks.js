@@ -94,7 +94,9 @@ export default (app) => {
       async (req, reply) => {
         const { id } = req.params;
         const task = await app.objection.models.task.query().findById(id);
-        reply.render('tasks/edit', { task });
+        const statuses = await app.objection.models.status.query().orderBy('name');
+        const users = await app.objection.models.user.query().orderBy('first_name', 'last_name');
+        reply.render('tasks/edit', { task, statuses, users });
         return reply;
       },
     )
@@ -106,17 +108,34 @@ export default (app) => {
       },
       async (req, reply) => {
         const { id } = req.params;
-        const { data } = req.body;
+
+        const {
+          name, description, statusId, executorId,
+        } = req.body.data;
+
+        const jsonData = {
+          name,
+          description,
+          statusId: parseInt(statusId, 10),
+          creatorId: req.user.id,
+        };
+
+        if (executorId !== '') {
+          jsonData.executorId = parseInt(executorId, 10);
+        }
+
         try {
           const task = await app.objection.models.task.query().findById(id);
-          await task.$query().update(data);
+          await task.$query().update(jsonData);
           req.flash('info', i18next.t('flash.tasks.update.success'));
           reply.status(302);
           reply.redirect(app.reverse('tasks'));
-        } catch (error) {
+        } catch ({ data }) {
           req.flash('error', i18next.t('flash.tasks.update.error'));
           reply.status(422);
-          reply.render('tasks/edit', { task: { ...data, id }, errors: error.data });
+          reply.render('tasks/edit', {
+            task: { ...jsonData, id }, errors: data,
+          });
         }
         return reply;
       },
@@ -128,7 +147,6 @@ export default (app) => {
         preValidation: [app.authenticate, app.authorizeDeleteTask],
       },
       async (req, reply) => {
-
         const { id } = req.params;
         try {
           await app.objection.models.task.query().deleteById(id);

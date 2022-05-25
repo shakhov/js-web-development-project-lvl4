@@ -1,0 +1,13 @@
+extends ../layouts/application.pug
+
+block header
+  = t('views.tasks.edit.editing')
+
+block content
+  +formFor()(action=route('patchTask', { id: task.id }) method='post')
+    input(name='_method' type='hidden' value='patch')
+    +input(task, 'name', t('views.tasks.name'), errors)(type="text")
+    +input(taks, 'description', t('views.tasks.description'), errors)(type="text")
+    +select(task, 'statusId', t('views.tasks.status'), statuses, true, errors)
+    +select(task, 'executorId', t('views.tasks.executor'), users.map(({ id, fullName }) => ({ id, name: fullName })), false, errors)
+    +submit(task)(value=t('views.tasks.actions.edit'))
