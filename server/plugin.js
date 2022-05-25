@@ -119,7 +119,10 @@ const registerPlugins = (app) => {
   app.decorate('authorizeDeleteTask', async (request, reply) => {
     const { id } = request.params;
     const { user } = request;
-    if (user.id.toString() !== id) {
+    const { creatorId } = await app.objection.models.task.query().findById(id);
+
+    if (user.id !== creatorId) {
+      console.log(user.id, creatorId);
       request.flash('error', i18next.t('flash.auth.unauthorized.editTask'));
       reply.redirect(app.reverse('tasks'));
     }
