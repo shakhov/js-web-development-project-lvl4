@@ -75,13 +75,26 @@ export default (app) => {
       async (req, reply) => {
         const { id } = req.params;
         try {
+          const taskCount = await app.objection.models.task
+            .query()
+            .where('creatorId', '=', id)
+            .orWhere('executorId', '=', id)
+            .resultSize();
+
+          if (taskCount > 0) {
+            req.flash('error', i18next.t('flash.users.delete.error'));
+            reply.status(302);
+            reply.redirect(app.reverse('users'));
+            return reply;
+          }
+
           await app.objection.models.user.query().deleteById(id);
           req.flash('info', i18next.t('flash.users.delete.success'));
           reply.redirect(app.reverse('root'));
         } catch (error) {
           req.flash('error', i18next.t('flash.users.delete.error'));
-          reply.status(422);
-          reply.redirect(app.reverse('root'));
+          reply.status(302);
+          reply.redirect(app.reverse('users'));
         }
         return reply;
       },
