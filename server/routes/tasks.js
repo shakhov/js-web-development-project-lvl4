@@ -86,6 +86,29 @@ export default (app) => {
       },
     )
     .get(
+      '/tasks/:id',
+      {
+        name: 'viewTask',
+        preValidation: app.authenticate,
+      },
+      async (req, reply) => {
+        const { id } = req.params;
+        const task = await app.objection.models.task.query().findById(id)
+          .select(
+            'tasks.*',
+            'status.name as statusName',
+            // FIXME join with virtual attribute 'fullName'
+            'creator.firstName as creatorFirstName',
+            'creator.lastName as creatorLastName',
+            'executor.firstName as executorFirstName',
+            'executor.lastName as executorLastName',
+          )
+          .leftJoinRelated('[status, creator, executor]');
+        reply.render('tasks/view', { task });
+        return reply;
+      },
+    )
+    .get(
       '/tasks/:id/edit',
       {
         name: 'editTask',

@@ -1,7 +1,9 @@
 extends ../layouts/application.pug
 
-block content
+block header
   h1= t('views.statuses.index')
+
+block content
   a(
     class="btn btn-primary"
     href=route('newStatus')

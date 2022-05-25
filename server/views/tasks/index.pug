@@ -1,7 +1,9 @@
 extends ../layouts/application.pug
 
-block content
+block header
   h1= t('views.tasks.index')
+
+block content
   a(
     class="btn btn-primary"
     href=route('newTask')
@@ -21,7 +23,7 @@ block content
         tr
           td= task.id
           td
-            a(href="")= task.name
+            a(href=route('viewTask', { id: task.id }))= task.name
           td= task.statusName
           td= (task.creatorFirstName || '') + ' ' + (task.creatorLastName || '')
           td= (task.executorFirstName || '') + ' ' + (task.executorLastName || '')

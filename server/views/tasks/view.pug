@@ -1,0 +1,32 @@
+extends ../layouts/application.pug
+
+block header
+  = task.name
+
+block content
+  .row(class="mt-5 p-5 shadow bg-white")
+    .col(class="col-12 col-md-8 order-2 order-md1")
+      .lead(class="fw-normal mb-4")= task.description
+    .col(class="col-12 col-md-4 border-start px-3 order-1 order-md-2 mb-3 mb-md-0")
+      .mb-2= Tags
+      .mb-3
+        span.text-muted.me-2= t('views.tasks.creator')
+        span= task.creatorFirstName + ' ' + task.creatorLastName
+      .mb-3
+        span.text-muted.me-2= t('views.tasks.executor')
+        span= task.executorFirstName + ' ' + task.executorLastName
+        .mb-3
+        span.text-muted.me-2= t('views.tasks.createdAt')
+        span= formatDate(task.createdAt)
+      div(class="flex d-flex")
+        a(
+          class="btn btn-primary me-1"
+          href=route('editTask', { id: task.id })
+        )= t('views.tasks.actions.edit')
+        +buttonTo(
+          route('deleteTask', { id: task.id }),
+          'delete'
+        )(
+          class="btn btn-danger"
+          value=t('views.tasks.actions.delete')
+        )
