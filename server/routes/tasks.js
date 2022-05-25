@@ -21,7 +21,7 @@ export default (app) => {
             'executor.firstName as executorFirstName',
             'executor.lastName as executorLastName',
           )
-          .joinRelated('[status, creator, executor]');
+          .leftJoinRelated('[status, creator, executor]');
         reply.render('tasks/index', { tasks });
         return reply;
       },
@@ -48,18 +48,25 @@ export default (app) => {
       },
       async (req, reply) => {
         const task = new app.objection.models.task();
-        const reqData = req.body.data;
+        const {
+          name, description, statusId, executorId,
+        } = req.body.data;
 
         const jsonData = {
-          ...reqData,
-          statusId: parseInt(reqData.statusId, 10),
-          executorId: parseInt(reqData.executorId, 10),
+          name,
+          description,
+          statusId: parseInt(statusId, 10),
           creatorId: req.user.id,
         };
+
+        if (executorId !== '') {
+          jsonData.executorId = parseInt(executorId, 10);
+        }
 
         try {
           const validTask = await app.objection.models.task.fromJson(jsonData);
           await app.objection.models.task.query().insert(validTask);
+
           req.flash('info', i18next.t('flash.tasks.create.success'));
           reply.redirect(app.reverse('tasks'));
         } catch ({ data }) {
@@ -121,6 +128,7 @@ export default (app) => {
         preValidation: [app.authenticate, app.authorizeDeleteTask],
       },
       async (req, reply) => {
+
         const { id } = req.params;
         try {
           await app.objection.models.task.query().deleteById(id);
@@ -128,7 +136,7 @@ export default (app) => {
           reply.redirect(app.reverse('tasks'));
         } catch (error) {
           req.flash('error', i18next.t('flash.tasks.delete.error'));
-          reply.status(422);
+          reply.status(302);
           reply.redirect(app.reverse('task'));
         }
         return reply;
