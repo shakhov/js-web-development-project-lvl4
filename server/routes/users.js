@@ -21,6 +21,7 @@ export default (app) => {
         const validUser = await app.objection.models.user.fromJson(req.body.data);
         await app.objection.models.user.query().insert(validUser);
         req.flash('info', i18next.t('flash.users.create.success'));
+        await req.logIn(validUser);
         reply.redirect(app.reverse('root'));
       } catch ({ data }) {
         req.flash('error', i18next.t('flash.users.create.error'));
@@ -90,6 +91,7 @@ export default (app) => {
 
           await app.objection.models.user.query().deleteById(id);
           req.flash('info', i18next.t('flash.users.delete.success'));
+          req.logOut();
           reply.redirect(app.reverse('root'));
         } catch (error) {
           req.flash('error', i18next.t('flash.users.delete.error'));
