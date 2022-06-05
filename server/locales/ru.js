@@ -41,6 +41,20 @@ export default {
           success: 'Статус успешно изменён',
         },
       },
+      labels: {
+        create: {
+          error: 'Не удалось создать метку',
+          success: 'Метка успешно создана',
+        },
+        delete: {
+          error: 'Не удалось удалить метку',
+          success: 'Метка успешно удалена',
+        },
+        update: {
+          error: 'Не удалось изменить метку',
+          success: 'Метка успешно изменена',
+        },
+      },
       tasks: {
         create: {
           error: 'Не удалось создать задачу',
@@ -67,6 +81,7 @@ export default {
       application: {
         users: 'Пользователи',
         statuses: 'Статусы',
+        labels: 'Метки',
         tasks: 'Задачи',
         signIn: 'Вход',
         signUp: 'Регистрация',
@@ -119,6 +134,25 @@ export default {
         },
         edit: {
           editing: 'Изменение статуса',
+        },
+      },
+      labels: {
+        id: 'ID',
+        name: 'Наименование',
+        createdAt: 'Дата создания',
+        index: 'Метки',
+        actions: {
+          header: 'Действия',
+          new: 'Создать метку',
+          edit: 'Изменить',
+          delete: 'Удалить',
+        },
+        new: {
+          title: 'Создание метки',
+          submit: 'Создать',
+        },
+        edit: {
+          editing: 'Изменение метки',
         },
       },
       tasks: {
