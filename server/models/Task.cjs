@@ -3,6 +3,7 @@ const objectionUnique = require('objection-unique');
 const BaseModel = require('./BaseModel.cjs');
 const User = require('./User.cjs');
 const Status = require('./Status.cjs');
+const Label = require('./Label.cjs');
 
 const unique = objectionUnique({ fields: ['name'] });
 
@@ -49,6 +50,18 @@ module.exports = class Task extends unique(BaseModel) {
       join: {
         from: 'tasks.executorId',
         to: 'users.id',
+      },
+    },
+    labels: {
+      relation: BaseModel.ManyToManyRelation,
+      modelClass: Label,
+      join: {
+        from: 'tasks.id',
+        through: {
+          from: 'tasks_labels.taskId',
+          to: 'tasks_labels.labelId',
+        },
+        to: 'labels.id',
       },
     },
   };
