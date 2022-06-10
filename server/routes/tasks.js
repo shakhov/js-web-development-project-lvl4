@@ -35,8 +35,11 @@ export default (app) => {
       async (req, reply) => {
         const task = new app.objection.models.task();
         const statuses = await app.objection.models.status.query().orderBy('name');
+        const labels = await app.objection.models.label.query().orderBy('name');
         const users = await app.objection.models.user.query().orderBy('first_name', 'last_name');
-        reply.render('tasks/new', { task, statuses, users });
+        reply.render('tasks/new', {
+          task, statuses, labels, users,
+        });
 
         return reply;
       },
@@ -49,7 +52,7 @@ export default (app) => {
       async (req, reply) => {
         const task = new app.objection.models.task();
         const {
-          name, description, statusId, executorId,
+          name, description, statusId, executorId, labels: taskLabels,
         } = req.body.data;
 
         const jsonData = {
@@ -65,7 +68,10 @@ export default (app) => {
 
         try {
           const validTask = await app.objection.models.task.fromJson(jsonData);
-          await app.objection.models.task.query().insert(validTask);
+          await app.objection.models.task.transaction(async (trx) => {
+            await app.objection.models.task.query(trx).insert(validTask);
+            await Promise.all([...taskLabels].map((label) => validTask.$relatedQuery('labels', trx).relate(label)));
+          });
 
           req.flash('info', i18next.t('flash.tasks.create.success'));
           reply.redirect(app.reverse('tasks'));
@@ -74,11 +80,12 @@ export default (app) => {
           reply.status(422);
 
           const statuses = await app.objection.models.status.query().orderBy('name');
+          const labels = await app.objection.models.label.query().orderBy('name');
           const users = await app.objection.models.user.query().orderBy('first_name', 'last_name');
 
           task.$set(jsonData);
           reply.render('tasks/new', {
-            task, statuses, users, errors: data,
+            task, statuses, labels, taskLabels, users, errors: data,
           });
         }
 
@@ -104,6 +111,8 @@ export default (app) => {
             'executor.lastName as executorLastName',
           )
           .leftJoinRelated('[status, creator, executor]');
+        const taskLabels = await task.$relatedQuery('labels').orderBy('name');
+        task.labels = [...taskLabels].map((label) => label.name);
         reply.render('tasks/view', { task });
         return reply;
       },
@@ -118,8 +127,13 @@ export default (app) => {
         const { id } = req.params;
         const task = await app.objection.models.task.query().findById(id);
         const statuses = await app.objection.models.status.query().orderBy('name');
+        const labels = await app.objection.models.label.query().orderBy('name');
         const users = await app.objection.models.user.query().orderBy('first_name', 'last_name');
-        reply.render('tasks/edit', { task, statuses, users });
+        const taskLabels = await task.$relatedQuery('labels').orderBy('name');
+
+        reply.render('tasks/edit', {
+          task, statuses, labels, users, taskLabels: taskLabels.map((label) => label.id.toString()),
+        });
         return reply;
       },
     )
@@ -133,7 +147,7 @@ export default (app) => {
         const { id } = req.params;
 
         const {
-          name, description, statusId, executorId,
+          name, description, statusId, executorId, labels: taskLabels,
         } = req.body.data;
 
         const jsonData = {
@@ -149,15 +163,24 @@ export default (app) => {
 
         try {
           const task = await app.objection.models.task.query().findById(id);
-          await task.$query().update(jsonData);
+
+          await app.objection.models.task.transaction(async (trx) => {
+            await task.$query(trx).update(jsonData);
+            await task.$relatedQuery('labels', trx).unrelate();
+            await Promise.all([...taskLabels].map((label) => task.$relatedQuery('labels', trx).relate(label)));
+          });
+
           req.flash('info', i18next.t('flash.tasks.update.success'));
           reply.status(302);
           reply.redirect(app.reverse('tasks'));
         } catch ({ data }) {
           req.flash('error', i18next.t('flash.tasks.update.error'));
+          const statuses = await app.objection.models.status.query().orderBy('name');
+          const labels = await app.objection.models.label.query().orderBy('name');
+          const users = await app.objection.models.user.query().orderBy('first_name', 'last_name');
           reply.status(422);
           reply.render('tasks/edit', {
-            task: { ...jsonData, id }, errors: data,
+            task: { ...jsonData, id }, errors: data, statuses, users, labels, taskLabels,
           });
         }
         return reply;

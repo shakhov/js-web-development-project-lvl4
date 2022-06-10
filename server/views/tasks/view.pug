@@ -8,13 +8,16 @@ block content
     .col(class="col-12 col-md-8 order-2 order-md1")
       .lead(class="fw-normal mb-4")= task.description
     .col(class="col-12 col-md-4 border-start px-3 order-1 order-md-2 mb-3 mb-md-0")
-      .mb-2= Tags
+      .mb-2
+        span(class="me-1 badge bg-danger text-white")= task.statusName
+        each label in task.labels
+          span(class="me-1 badge bg-info text-white")= label
       .mb-3
         span.text-muted.me-2= t('views.tasks.creator')
-        span= task.creatorFirstName + ' ' + task.creatorLastName
+        span= (task.creatorFirstName || '') + ' ' + (task.creatorLastName || '')
       .mb-3
         span.text-muted.me-2= t('views.tasks.executor')
-        span= task.executorFirstName + ' ' + task.executorLastName
+        span= (task.executorFirstName || '') + ' ' + (task.executorLastName || '')
         .mb-3
         span.text-muted.me-2= t('views.tasks.createdAt')
         span= formatDate(task.createdAt)

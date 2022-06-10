@@ -10,4 +10,5 @@ block content
     +input(taks, 'description', t('views.tasks.description'), errors)(type="text")
     +select(task, 'statusId', t('views.tasks.status'), statuses, true, errors)
     +select(task, 'executorId', t('views.tasks.executor'), users.map(({ id, fullName }) => ({ id, name: fullName })), false, errors)
+    +select(task, 'labels', t('views.tasks.labels'), labels, true, errors, taskLabels)(multiple="multiple")
     +submit(task)(value=t('views.tasks.actions.edit'))

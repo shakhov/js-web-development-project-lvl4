@@ -164,6 +164,7 @@ export default {
         creator: 'Автор',
         executor: 'Исполнитель',
         createdAt: 'Дата создания',
+        labels: 'Метки',
         actions: {
           header: 'Действия',
           new: 'Создать задачу',

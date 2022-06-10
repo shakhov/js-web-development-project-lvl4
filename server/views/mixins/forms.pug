@@ -30,7 +30,7 @@ mixin buttonTo(action, method)
     input(name="_method" type="hidden" value=method)
     input(type='submit')&attributes(attributes)
 
-mixin select(entity, propertyName, labelText, options, isRequired, errors = {})
+mixin select(entity, propertyName, labelText, options, isRequired, errors = {}, selected = [])
   - propertyErrors = _.get(errors, propertyName)
   - classLine = 'form-control' + (_.isEmpty(propertyErrors) ? '' : ' is-invalid')
   - inputId = getInputId(propertyName)
@@ -46,7 +46,7 @@ mixin select(entity, propertyName, labelText, options, isRequired, errors = {})
         if (!isRequired)
           option
         each option in options
-          if (option.id == _.get(entity, propertyName))
+          if (option.id == _.get(entity, propertyName, '') || selected.includes(option.id.toString()))
             option(
               value= option.id
               selected="selected"
@@ -56,4 +56,4 @@ mixin select(entity, propertyName, labelText, options, isRequired, errors = {})
               value= option.id
             )= option.name
       if !_.isEmpty(propertyErrors)
-        .invalid-feedback= propertyErrors.map(({ message }) => message).join('. ')
+        .invalid-feedback= propertyErrors.map(({ message }) => message).join('.')
